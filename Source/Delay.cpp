@@ -40,7 +40,7 @@ StereoPair DelayLine::readStereo() {
 void DelayManager::newLine() {
     passiveLines.push_back(activeLine);
     int delayTime = Random::getSystemRandom().nextInt(44100) + 10000;
-    float pan = Random::getSystemRandom().nextInt(2) - 2; // -1 <= pan <= 1
+    float pan = Random::getSystemRandom().nextFloat()*2 - 1; // -1 <= pan <= 1
     activeLine = new DelayLine(delayTime, 0.5, pan);
     
     if (passiveLines.size() > 20) {

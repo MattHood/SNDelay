@@ -9,9 +9,14 @@
 #include "ConstantPowerPanner.hpp"
 
 
+
 ConstantPowerPanner::ConstantPowerPanner(float pan) {
-    leftAmp = std::abs(pan);
-    rightAmp = 1 - std::abs(pan);
+    std::cout << "Pam: " << pan << std::endl;
+    const float pi = 3.1415926545;
+    float angle_adjusted = (pan + 1)*(pi/4);
+    
+    leftAmp = std::cos(angle_adjusted);
+    rightAmp = std::sin(angle_adjusted);
 }
 
 std::tuple<float, float> ConstantPowerPanner::stereoPair(float sample) {

@@ -12,6 +12,7 @@
 #include <stdio.h>
 #include <tuple>
 #include <cmath>
+#include <iostream>
 
 #endif /* ConstantPowerPanner_hpp */
 
