@@ -31,7 +31,7 @@ private:
     int size;
     ConstantPowerPanner cpp;
     std::vector<float> buffer;
-    std::tuple<float, float> stereoPair(float sample, float angle);
+    StereoPair stereoPair(float sample, float angle);
 };
 
 class DelayManager {
@@ -41,6 +41,7 @@ public:
     
     //void writeSample();
     void newLine();
+    int quantiseDelayLength(int unquantisedLength, float tempo, int sampleRate, int subdivision);
 private:
     const static int max_lines = 50;
     std::deque<DelayLine*> passiveLines; 

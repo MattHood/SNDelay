@@ -70,3 +70,11 @@ StereoPair DelayManager::readWriteSample(float sample) {
     
     return sampleSum;
 }
+
+int DelayManager::quantiseDelayLength(int unquantisedLength, float tempo, int sampleRate, int subdivision) {
+    int samplesPerSubdivision = std::round((60 / tempo) * sampleRate / subdivision);
+    int multiplier = std::floor(unquantisedLength / samplesPerSubdivision);
+    int remainder = std::round((unquantisedLength % samplesPerSubdivision) / samplesPerSubdivision);
+    int quantisedLength = multiplier*samplesPerSubdivision + remainder*samplesPerSubdivision;
+    return quantisedLength;
+}

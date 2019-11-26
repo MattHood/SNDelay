@@ -11,7 +11,6 @@
 
 
 ConstantPowerPanner::ConstantPowerPanner(float pan) {
-    std::cout << "Pam: " << pan << std::endl;
     const float pi = 3.1415926545;
     float angle_adjusted = (pan + 1)*(pi/4);
     
