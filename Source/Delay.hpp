@@ -13,6 +13,7 @@
 #include <deque>
 #include "../JuceLibraryCode/JuceHeader.h"
 #include "ConstantPowerPanner.hpp"
+#include "RandomStore.hpp"
 
 #endif /* Delay_hpp */
 
@@ -36,10 +37,11 @@ private:
 
 class DelayManager {
 public:
-    DelayManager();
+    DelayManager(RandomStore* mRandomStore);
     StereoPair readWriteSample(float sample);
     
     //void writeSample();
+    RandomStore* randomStore;
     void newLine();
     int quantiseDelayLength(int unquantisedLength, float tempo, int sampleRate, int subdivision);
 private:

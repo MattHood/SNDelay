@@ -12,10 +12,14 @@ typedef std::tuple<float, float> StereoPair;
 
 DelayLine::DelayLine(int sizeInSamples, float regen, float pan)
     : cpp(pan) {
+        if(sizeInSamples <= 0) {
+            sizeInSamples = 1;
+        } // Ensure non-zero size.
+    
     buffer.resize(sizeInSamples);
+        
     this->size = sizeInSamples;
     this->regen = regen;
-    
 }
 
 float DelayLine::readWriteSample(float sample) {
@@ -39,9 +43,11 @@ StereoPair DelayLine::readStereo() {
 
 void DelayManager::newLine() {
     passiveLines.push_back(activeLine);
-    int delayTime = Random::getSystemRandom().nextInt(44100) + 10000;
-    float pan = Random::getSystemRandom().nextFloat()*2 - 1; // -1 <= pan <= 1
-    activeLine = new DelayLine(delayTime, 0.5, pan);
+    auto dt = randomStore->getDelayTime();
+    auto r = randomStore->getRegen();
+    auto p = randomStore->getPan();
+    
+    activeLine = new DelayLine(dt,r,p);
     
     if (passiveLines.size() > 20) {
         delete passiveLines.front();
@@ -54,10 +60,11 @@ StereoPair addStereoPair(StereoPair a, StereoPair b) {
     return std::make_pair(std::get<0>(a) + std::get<0>(b), std::get<1>(a) + std::get<1>(b));
 }
 
-DelayManager::DelayManager() {
-    int delayTime = Random::getSystemRandom().nextInt(35000) + 10000;
-    float pan = Random::getSystemRandom().nextFloat()*2 - 2;
-    activeLine = new DelayLine(delayTime, 0.9, pan);
+DelayManager::DelayManager(RandomStore* rstore) {
+    randomStore = rstore;
+    activeLine = new DelayLine(randomStore->getDelayTime(),
+                               randomStore->getRegen(),
+                               randomStore->getPan());
 }
 
 StereoPair DelayManager::readWriteSample(float sample) {

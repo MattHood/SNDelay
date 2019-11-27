@@ -13,6 +13,7 @@
 #include "../JuceLibraryCode/JuceHeader.h"
 #include <array>
 #include "Delay.hpp"
+//#include "RandomStore.hpp"
 #include <tuple>
 
 typedef std::tuple<float, float> StereoPair;
@@ -69,7 +70,10 @@ public:
     std::array<Array<float>, maxEnvelopes> samples;
     Array<float> transientBuffer;
     
-    DelayManager dman;
+    RandomStore* randomStore;
+    DelayManager* dman;
+    
+    
 
 private:
     //==============================================================================

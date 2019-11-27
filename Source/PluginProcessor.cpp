@@ -24,10 +24,15 @@ SndelayAudioProcessor::SndelayAudioProcessor()
                        )
 #endif
 {
+    randomStore = new RandomStore();
+    dman = new DelayManager(randomStore);
+    
 }
 
 SndelayAudioProcessor::~SndelayAudioProcessor()
 {
+    delete randomStore;
+    delete dman;
 }
 
 //==============================================================================
@@ -207,9 +212,9 @@ void SndelayAudioProcessor::processBlock (AudioBuffer<float>& buffer, MidiBuffer
         float sample = buffer.getSample(0, currentSampleIndex);
         
         if (followEnvelopes(sample)) {
-            dman.newLine();
+            dman->newLine();
         }
-        StereoPair sndelay = dman.readWriteSample(sample);
+        StereoPair sndelay = dman->readWriteSample(sample);
         //std::cout << "L: " << std::get<0>(sndelay) << " R: " << std::get<1>(sndelay) << std::endl;
         leftChannelData[currentSampleIndex] = std::get<0>(sndelay);
         rightChannelData[currentSampleIndex] = std::get<1>(sndelay);
