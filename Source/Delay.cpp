@@ -46,7 +46,9 @@ void DelayManager::newLine() {
     auto dt = randomStore->getDelayTime();
     auto r = randomStore->getRegen();
     auto p = randomStore->getPan();
-    
+    if (quantise) {
+        dt = quantiseDelayLength(dt, 4); // Quantise to semiquaver
+    }
     activeLine = new DelayLine(dt,r,p);
     
     if (passiveLines.size() > 20) {
@@ -78,7 +80,7 @@ StereoPair DelayManager::readWriteSample(float sample) {
     return sampleSum;
 }
 
-int DelayManager::quantiseDelayLength(int unquantisedLength, float tempo, int sampleRate, int subdivision) {
+int DelayManager::quantiseDelayLength(int unquantisedLength, int subdivision) {
     int samplesPerSubdivision = std::round((60 / tempo) * sampleRate / subdivision);
     int multiplier = std::floor(unquantisedLength / samplesPerSubdivision);
     int remainder = std::round((unquantisedLength % samplesPerSubdivision) / samplesPerSubdivision);

@@ -42,10 +42,14 @@ public:
     
     //void writeSample();
     RandomStore* randomStore;
-    void newLine();
-    int quantiseDelayLength(int unquantisedLength, float tempo, int sampleRate, int subdivision);
+    void  newLine();
+    int   quantiseDelayLength(int unquantisedLength, int subdivision);
+    float tempo = 100;
+    bool  quantise = true;
+    int sampleRate;
 private:
     const static int max_lines = 50;
+    
     std::deque<DelayLine*> passiveLines; 
     DelayLine* activeLine; // Pointer logic may get hairy here
 };
