@@ -26,7 +26,7 @@ SndelayAudioProcessor::SndelayAudioProcessor()
 {
     randomStore = new RandomStore();
     dman = new DelayManager(randomStore);
-    
+     
 }
 
 SndelayAudioProcessor::~SndelayAudioProcessor()
@@ -203,7 +203,11 @@ void SndelayAudioProcessor::processBlock (AudioBuffer<float>& buffer, MidiBuffer
     // Alternatively, you can process the samples with the channels
     // interleaved by keeping the same state.
     float* leftChannelData = buffer.getWritePointer(0); // Left channel only
-    float* rightChannelData = buffer.getWritePointer(1);
+    float* rightChannelData;
+    int channels = buffer.getNumChannels();
+    if (channels >= 2) {
+        rightChannelData = buffer.getWritePointer(1);
+    }
     
     int currentSampleIndex = 0;
     
@@ -216,9 +220,10 @@ void SndelayAudioProcessor::processBlock (AudioBuffer<float>& buffer, MidiBuffer
             dman->newLine();
         }
         StereoPair sndelay = dman->readWriteSample(sample);
-        //std::cout << "L: " << std::get<0>(sndelay) << " R: " << std::get<1>(sndelay) << std::endl;
         leftChannelData[currentSampleIndex] = std::get<0>(sndelay);
-        rightChannelData[currentSampleIndex] = std::get<1>(sndelay);
+        if (channels >= 2) {
+           rightChannelData[currentSampleIndex] = std::get<1>(sndelay);
+        }
     }
 }
 

@@ -77,7 +77,7 @@ StereoPair DelayManager::readWriteSample(float sample) {
         sampleSum = addStereoPair(sampleSum, dl->readStereo());
     }
     
-    return sampleSum;
+    return sampleSum; 
 }
 
 int DelayManager::quantiseDelayLength(int unquantisedLength, int subdivision) {
