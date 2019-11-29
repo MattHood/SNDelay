@@ -43,12 +43,14 @@ StereoPair DelayLine::readStereo() {
 
 void DelayManager::newLine() {
     passiveLines.push_back(activeLine);
-    auto dt = randomStore->getDelayTime();
+    auto dt = randomStore->getDelayTime()*sampleRate;
     auto r = randomStore->getRegen();
     auto p = randomStore->getPan();
+    
     if (quantise) {
         dt = quantiseDelayLength(dt, 4); // Quantise to semiquaver
     }
+    
     activeLine = new DelayLine(dt,r,p);
     
     if (passiveLines.size() > 20) {

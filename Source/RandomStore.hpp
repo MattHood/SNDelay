@@ -17,14 +17,14 @@
 class RandomStore {
 public:
     RandomStore();
-    int getDelayTime();
-    void setDelayRange(int min, int max);
+    float getDelayTime();
+    void setDelayRange(float min, float max);
     float getRegen();
     void setRegenRange(float min, float max);
     float getPan();
     void setPanRange(float min, float max);
 private:
-    Range<int> delayTime;
+    Range<float> delayTime;
     Range<float> regen;
     Range<float> pan;
 };

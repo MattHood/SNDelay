@@ -30,6 +30,12 @@ private:
     // This reference is provided as a quick way for your editor to
     // access the processor object that created it.
     SndelayAudioProcessor& processor;
+    Slider delayTime;
+    Slider regen;
+    Slider pan;
+    Label delayTimeLabel;
+    Label regenLabel;
+    Label panLabel;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (SndelayAudioProcessorEditor)
 };
