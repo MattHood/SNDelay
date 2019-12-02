@@ -33,9 +33,16 @@ private:
     Slider delayTime;
     Slider regen;
     Slider pan;
+    Slider mixSlider;
+    
     Label delayTimeLabel;
     Label regenLabel;
     Label panLabel;
+    Label mixLabel;
+    
+    ToggleButton quantise{"Quantise"};
+    Label tempoLabel;
+    Label bpmLabel;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (SndelayAudioProcessorEditor)
 };

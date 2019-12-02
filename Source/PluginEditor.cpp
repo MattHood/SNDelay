@@ -65,6 +65,29 @@ SndelayAudioProcessorEditor::SndelayAudioProcessorEditor (SndelayAudioProcessor&
     panLabel.setText("Pan", dontSendNotification);
     panLabel.attachToComponent(&pan, true);
     addAndMakeVisible(panLabel);
+    
+    mixSlider.setSliderStyle(Slider::SliderStyle::LinearHorizontal);
+    mixSlider.setTextBoxStyle(Slider::TextEntryBoxPosition::NoTextBox, true, 0, 0);
+    mixSlider.setRange(-1, 1);
+    mixSlider.setValue(0);
+    mixSlider.onValueChange =
+    [this] {
+        processor.mix = mixSlider.getValue();
+    };
+    addAndMakeVisible(mixSlider);
+    
+    mixLabel.setText("Mix", dontSendNotification);
+    mixLabel.attachToComponent(&mixSlider, true);
+    addAndMakeVisible(mixLabel);
+    
+    
+    quantise.onClick = [this] {
+        processor.dman->quantise = quantise.getToggleState();
+        
+    };
+    quantise.setToggleState(true, sendNotification);
+    addAndMakeVisible(quantise);
+    
 }
 
 SndelayAudioProcessorEditor::~SndelayAudioProcessorEditor()
@@ -79,7 +102,7 @@ void SndelayAudioProcessorEditor::paint (Graphics& g)
 
     g.setColour (Colours::white);
     g.setFont (15.0f);
-    g.drawFittedText ("Standard Normal Delay", getLocalBounds(), Justification::centred, 1);
+   // g.drawFittedText ("Standard Normal Delay", getLocalBounds(), Justification::centred, 1);
 }
 
 void SndelayAudioProcessorEditor::resized()
@@ -91,4 +114,6 @@ void SndelayAudioProcessorEditor::resized()
     delayTime.setBounds(sliderLeft, 20, getWidth() - sliderLeft - 10, 20);
     regen.setBounds(sliderLeft, 50, getWidth() - sliderLeft - 10, 20);
     pan.setBounds(sliderLeft, 80, getWidth() - sliderLeft - 10, 20);
+    mixSlider.setBounds(sliderLeft, 110, getWidth() - sliderLeft - 10, 20);
+    quantise.setBounds(sliderLeft, 140, getWidth() - 30, 20);
 }

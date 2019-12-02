@@ -180,6 +180,27 @@ bool SndelayAudioProcessor::followEnvelopes(float sample) {
     }
 }
 
+float SndelayAudioProcessor::getDryGain() {
+    jassert(-1 <= mix <= 1);
+    if (mix < 0) {
+        return 1;
+    }
+    else {
+        return 1 - mix;
+    }
+}
+
+float SndelayAudioProcessor::getWetGain() {
+    jassert(-1 <= mix <= 1);
+    if (mix > 0) {
+        return 1;
+    }
+    else {
+        return 1 + mix;
+    }
+}
+
+
 
 void SndelayAudioProcessor::processBlock (AudioBuffer<float>& buffer, MidiBuffer& midiMessages)
 {
@@ -202,6 +223,13 @@ void SndelayAudioProcessor::processBlock (AudioBuffer<float>& buffer, MidiBuffer
     // the samples and the outer loop is handling the channels.
     // Alternatively, you can process the samples with the channels
     // interleaved by keeping the same state.
+    
+    playHead = this->getPlayHead();
+    if(playHead != NULL) {
+        playHead->getCurrentPosition(currentPositionInfo);
+        dman->tempo = currentPositionInfo.bpm;
+    }
+    
     float* leftChannelData = buffer.getWritePointer(0); // Left channel only
     float* rightChannelData;
     int channels = buffer.getNumChannels();
@@ -214,15 +242,22 @@ void SndelayAudioProcessor::processBlock (AudioBuffer<float>& buffer, MidiBuffer
     
     
     for (; currentSampleIndex < buffer.getNumSamples(); ++currentSampleIndex) {
-        float sample = buffer.getSample(0, currentSampleIndex);
+        float sample = 0;
+        for (int i = 0; i < buffer.getNumChannels(); i++) {
+            sample += buffer.getSample(i, currentSampleIndex);
+        }
         
         if (followEnvelopes(sample)) {
             dman->newLine();
         }
         StereoPair sndelay = dman->readWriteSample(sample);
-        leftChannelData[currentSampleIndex] = std::get<0>(sndelay);
+        leftChannelData[currentSampleIndex] =
+            std::get<0>(sndelay)*getWetGain() +
+            buffer.getSample(0, currentSampleIndex)*getDryGain();
         if (channels >= 2) {
-           rightChannelData[currentSampleIndex] = std::get<1>(sndelay);
+           rightChannelData[currentSampleIndex] =
+                std::get<1>(sndelay)*getWetGain() +
+                buffer.getSample(1, currentSampleIndex)*getDryGain();
         }
     }
 }

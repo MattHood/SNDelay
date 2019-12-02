@@ -70,8 +70,15 @@ public:
     std::array<Array<float>, maxEnvelopes> samples;
     Array<float> transientBuffer;
     
+    float mix;
+    float getDryGain();
+    float getWetGain();
+    
     RandomStore* randomStore;
     DelayManager* dman;
+    
+    AudioPlayHead* playHead;
+    AudioPlayHead::CurrentPositionInfo currentPositionInfo;
     
     
 
