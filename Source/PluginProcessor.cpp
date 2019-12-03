@@ -200,7 +200,9 @@ float SndelayAudioProcessor::getWetGain() {
     }
 }
 
-
+inline float dot_product(float a1, float a2, float b1, float b2) {
+    return a1*b1 + a2*b2;
+}
 
 void SndelayAudioProcessor::processBlock (AudioBuffer<float>& buffer, MidiBuffer& midiMessages)
 {
@@ -215,49 +217,61 @@ void SndelayAudioProcessor::processBlock (AudioBuffer<float>& buffer, MidiBuffer
     // when they first compile a plugin, but obviously you don't need to keep
     // this code if your algorithm always overwrites all the output channels.
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
-        buffer.clear (i, 0, buffer.getNumSamples());
+       buffer.clear (i, 0, buffer.getNumSamples());
 
-    // This is the place where you'd normally do the guts of your plugin's
-    // audio processing...
-    // Make sure to reset the state if your inner loop is processing
-    // the samples and the outer loop is handling the channels.
-    // Alternatively, you can process the samples with the channels
-    // interleaved by keeping the same state.
-    
+    // Get the current project tempo for the quantise feature
     playHead = this->getPlayHead();
     if(playHead != NULL) {
         playHead->getCurrentPosition(currentPositionInfo);
         dman->tempo = currentPositionInfo.bpm;
     }
     
-    float* leftChannelData = buffer.getWritePointer(0); // Left channel only
-    float* rightChannelData;
-    int channels = buffer.getNumChannels();
-    if (channels >= 2) {
-        rightChannelData = buffer.getWritePointer(1);
-    }
-    
-    int currentSampleIndex = 0;
+
     
     
+    const int channels = buffer.getNumChannels();
     
-    for (; currentSampleIndex < buffer.getNumSamples(); ++currentSampleIndex) {
+    for (int currentSampleIndex = 0; currentSampleIndex < buffer.getNumSamples(); ++currentSampleIndex) {
+        
+        // Sum input from all channels
         float sample = 0;
-        for (int i = 0; i < buffer.getNumChannels(); i++) {
+        for (int i = 0; i < channels; i++) {
             sample += buffer.getSample(i, currentSampleIndex);
         }
         
+        // DelayManager housekeeping
         if (followEnvelopes(sample)) {
             dman->newLine();
         }
-        StereoPair sndelay = dman->readWriteSample(sample);
-        leftChannelData[currentSampleIndex] =
-            std::get<0>(sndelay)*getWetGain() +
-            buffer.getSample(0, currentSampleIndex)*getDryGain();
-        if (channels >= 2) {
-           rightChannelData[currentSampleIndex] =
-                std::get<1>(sndelay)*getWetGain() +
-                buffer.getSample(1, currentSampleIndex)*getDryGain();
+
+        
+        // Output section:
+        // Sum to mono if that is the output configuration
+        if(channels == 1) {
+            buffer.setSample(0, currentSampleIndex, dman->readWriteSampleMono(sample));
+        }
+        // Or fill left and right channels with stereo output, remaining channels with zeroes.
+        else {
+            StereoPair sndelay = dman->readWriteSampleStereo(sample);
+            for(int i = 0; i < channels; i++) {
+                float newSample;
+                if(i == 0) {
+                    newSample = dot_product(std::get<0>(sndelay),
+                                            buffer.getSample(i, currentSampleIndex),
+                                            getWetGain(),
+                                            getDryGain());
+                }
+                else if(i == 1) {
+                    newSample = dot_product(std::get<1>(sndelay),
+                                            buffer.getSample(i, currentSampleIndex),
+                                            getWetGain(),
+                                            getDryGain());
+                }
+                else {
+                    newSample = 0;
+                }
+                buffer.setSample(i, currentSampleIndex, newSample);
+            }
         }
     }
 }

@@ -22,23 +22,23 @@ DelayLine::DelayLine(int sizeInSamples, float regen, float pan)
     this->regen = regen;
 }
 
-float DelayLine::readWriteSample(float sample) {
+float DelayLine::readWriteSampleMono(float sample) {
     float existing = buffer[tick];
     buffer[tick] = existing*regen + sample;
     tick = (tick + 1) % size;
     return existing;
 }
 
-float DelayLine::readOnly() {
-    return readWriteSample(0.0);
+float DelayLine::readMono() {
+    return readWriteSampleMono(0.0);
 }
 
-StereoPair DelayLine::readWriteStereo(float sample) {
-    return cpp.stereoPair(readWriteSample(sample));
+StereoPair DelayLine::readWriteSampleStereo(float sample) {
+    return cpp.stereoPair(readWriteSampleMono(sample));
 }
 
 StereoPair DelayLine::readStereo() {
-    return cpp.stereoPair(readOnly());
+    return cpp.stereoPair(readMono());
 }
 
 void DelayManager::newLine() {
@@ -71,15 +71,22 @@ DelayManager::DelayManager(RandomStore* rstore) {
                                randomStore->getPan());
 }
 
-StereoPair DelayManager::readWriteSample(float sample) {
-    StereoPair activeSample = activeLine->readWriteStereo(sample);
-    StereoPair sampleSum = activeSample;
+StereoPair DelayManager::readWriteSampleStereo(float sample) {
+    StereoPair sampleSum = activeLine->readWriteSampleStereo(sample);
     
     for(DelayLine* dl: passiveLines) {
         sampleSum = addStereoPair(sampleSum, dl->readStereo());
     }
     
     return sampleSum; 
+}
+
+float DelayManager::readWriteSampleMono(float sample) {
+    float sampleSum = activeLine->readWriteSampleMono(sample);
+    for(DelayLine* dl: passiveLines) {
+        sampleSum += dl->readMono();
+    }
+    return sampleSum;
 }
 
 int DelayManager::quantiseDelayLength(int unquantisedLength, int subdivision) {

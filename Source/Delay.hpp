@@ -21,9 +21,9 @@ typedef std::tuple<float, float> StereoPair;
 class DelayLine {
 public:
     DelayLine(int sizeInSamples, float regen, float pan = 0);
-    float readWriteSample(float sample);
-    StereoPair readWriteStereo(float sample);
-    float readOnly();
+    float readWriteSampleMono(float sample);
+    StereoPair readWriteSampleStereo(float sample);
+    float readMono();
     StereoPair readStereo();
     
 private:
@@ -38,7 +38,8 @@ private:
 class DelayManager {
 public:
     DelayManager(RandomStore* mRandomStore);
-    StereoPair readWriteSample(float sample);
+    StereoPair readWriteSampleStereo(float sample);
+    float readWriteSampleMono(float sample);
     
     //void writeSample();
     RandomStore* randomStore;
