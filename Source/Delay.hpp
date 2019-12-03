@@ -14,6 +14,7 @@
 #include "../JuceLibraryCode/JuceHeader.h"
 #include "ConstantPowerPanner.hpp"
 #include "RandomStore.hpp"
+#include <memory>
 
 #endif /* Delay_hpp */
 
@@ -25,33 +26,36 @@ public:
     StereoPair readWriteSampleStereo(float sample);
     float readMono();
     StereoPair readStereo();
+    std::unique_ptr<AudioBuffer<float>> buffer;
     
 private:
     float regen;
-    int tick;
+    int tick = 0;
     int size;
     ConstantPowerPanner cpp;
-    std::vector<float> buffer;
+    
     StereoPair stereoPair(float sample, float angle);
 };
 
 class DelayManager {
 public:
-    DelayManager(RandomStore* mRandomStore);
+    DelayManager(std::shared_ptr<RandomStore> mRandomStore);
     StereoPair readWriteSampleStereo(float sample);
     float readWriteSampleMono(float sample);
     
     //void writeSample();
-    RandomStore* randomStore;
+    std::shared_ptr<RandomStore> randomStore;
     void  newLine();
     int   quantiseDelayLength(int unquantisedLength, int subdivision);
-    float tempo = 100;
+    float tempo = 100; // Add control
+    int quantize_subdivision = 4;
     bool  quantise = true;
+    float silence_threshold = 0.05; // Add control
     int sampleRate;
 private:
     const static int max_lines = 50;
     
-    std::deque<DelayLine*> passiveLines; 
-    DelayLine* activeLine; // Pointer logic may get hairy here
+    std::deque<std::shared_ptr<DelayLine>> passiveLines;
+    std::shared_ptr<DelayLine> activeLine; // Pointer logic may get hairy here
 };
 

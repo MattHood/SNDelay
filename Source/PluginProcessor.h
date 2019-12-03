@@ -64,7 +64,7 @@ public:
     bool followEnvelopes(float sample);
     
     const static int maxEnvelopes = 10;
-    int numberOfEnvelopes = 9;
+    int numberOfEnvelopes = 9; // Add control
     std::array<float,maxEnvelopes> lastSample;
     std::array<int, maxEnvelopes> lastSign;
     std::array<Array<float>, maxEnvelopes> samples;
@@ -74,8 +74,8 @@ public:
     float getDryGain();
     float getWetGain();
     
-    RandomStore* randomStore;
-    DelayManager* dman;
+    std::shared_ptr<RandomStore> randomStore;
+    std::unique_ptr<DelayManager> dman;
     
     AudioPlayHead* playHead;
     AudioPlayHead::CurrentPositionInfo currentPositionInfo;

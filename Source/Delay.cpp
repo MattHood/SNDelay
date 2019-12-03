@@ -16,15 +16,16 @@ DelayLine::DelayLine(int sizeInSamples, float regen, float pan)
             sizeInSamples = 1;
         } // Ensure non-zero size.
     
-    buffer.resize(sizeInSamples);
-        
+    buffer = std::make_unique<AudioBuffer<float>>(1, sizeInSamples);
+    
+    buffer->clear();
     this->size = sizeInSamples;
     this->regen = regen;
 }
 
 float DelayLine::readWriteSampleMono(float sample) {
-    float existing = buffer[tick];
-    buffer[tick] = existing*regen + sample;
+    float existing = buffer->getSample(0, tick);
+    buffer->setSample(0, tick, existing*regen + sample);
     tick = (tick + 1) % size;
     return existing;
 }
@@ -42,20 +43,25 @@ StereoPair DelayLine::readStereo() {
 }
 
 void DelayManager::newLine() {
-    passiveLines.push_back(activeLine);
+    
+    auto peak = activeLine->buffer->getMagnitude(0, activeLine->buffer->getNumSamples());
+    if(peak > silence_threshold) {
+        passiveLines.push_back(activeLine);
+    }
+    
     auto dt = randomStore->getDelayTime()*sampleRate;
     auto r = randomStore->getRegen();
     auto p = randomStore->getPan();
     
     if (quantise) {
-        dt = quantiseDelayLength(dt, 4); // Quantise to semiquaver
+        dt = quantiseDelayLength(dt, quantize_subdivision); // Quantise to semiquaver
     }
     
-    activeLine = new DelayLine(dt,r,p);
+    activeLine = std::make_shared<DelayLine>(dt,r,p);
     
-    if (passiveLines.size() > 20) {
-        delete passiveLines.front();
-        passiveLines.pop_front(); // Memory leak?
+    if (passiveLines.size() > max_lines) {
+        
+        passiveLines.pop_front();
         
     }
 }
@@ -64,9 +70,9 @@ StereoPair addStereoPair(StereoPair a, StereoPair b) {
     return std::make_pair(std::get<0>(a) + std::get<0>(b), std::get<1>(a) + std::get<1>(b));
 }
 
-DelayManager::DelayManager(RandomStore* rstore) {
+DelayManager::DelayManager(std::shared_ptr<RandomStore> rstore) {
     randomStore = rstore;
-    activeLine = new DelayLine(randomStore->getDelayTime(),
+    activeLine = std::make_shared<DelayLine>(randomStore->getDelayTime(),
                                randomStore->getRegen(),
                                randomStore->getPan());
 }
@@ -74,7 +80,7 @@ DelayManager::DelayManager(RandomStore* rstore) {
 StereoPair DelayManager::readWriteSampleStereo(float sample) {
     StereoPair sampleSum = activeLine->readWriteSampleStereo(sample);
     
-    for(DelayLine* dl: passiveLines) {
+    for(std::shared_ptr<DelayLine> &dl: passiveLines) {
         sampleSum = addStereoPair(sampleSum, dl->readStereo());
     }
     
@@ -83,7 +89,7 @@ StereoPair DelayManager::readWriteSampleStereo(float sample) {
 
 float DelayManager::readWriteSampleMono(float sample) {
     float sampleSum = activeLine->readWriteSampleMono(sample);
-    for(DelayLine* dl: passiveLines) {
+    for(std::shared_ptr<DelayLine> &dl: passiveLines) {
         sampleSum += dl->readMono();
     }
     return sampleSum;

@@ -24,15 +24,14 @@ SndelayAudioProcessor::SndelayAudioProcessor()
                        )
 #endif
 {
-    randomStore = new RandomStore();
-    dman = new DelayManager(randomStore);
+    randomStore = std::make_shared<RandomStore>();
+    dman = std::make_unique<DelayManager>(randomStore);
      
 }
 
 SndelayAudioProcessor::~SndelayAudioProcessor()
 {
-    delete randomStore;
-    delete dman;
+    
 }
 
 //==============================================================================
@@ -238,6 +237,8 @@ void SndelayAudioProcessor::processBlock (AudioBuffer<float>& buffer, MidiBuffer
         for (int i = 0; i < channels; i++) {
             sample += buffer.getSample(i, currentSampleIndex);
         }
+        
+        // Peak vs. RMS testing
         
         // DelayManager housekeeping
         if (followEnvelopes(sample)) {
