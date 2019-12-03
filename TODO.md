@@ -17,3 +17,7 @@
 
 # Convert remaining non RAII to smart pointers
 
+# Extra features:
+## Configurable ramp
+## Reverse
+

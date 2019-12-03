@@ -26,14 +26,14 @@ public:
     StereoPair readWriteSampleStereo(float sample);
     float readMono();
     StereoPair readStereo();
-    std::unique_ptr<AudioBuffer<float>> buffer;
+    float getPeak();
     
 private:
     float regen;
     int tick = 0;
     int size;
     ConstantPowerPanner cpp;
-    
+    std::unique_ptr<AudioBuffer<float>> buffer;
     StereoPair stereoPair(float sample, float angle);
 };
 
@@ -50,7 +50,7 @@ public:
     float tempo = 100; // Add control
     int quantize_subdivision = 4;
     bool  quantise = true;
-    float silence_threshold = 0.05; // Add control
+    float silence_threshold = 0.0001; // Add control
     int sampleRate;
 private:
     const static int max_lines = 50;

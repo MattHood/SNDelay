@@ -64,7 +64,7 @@ public:
     bool followEnvelopes(float sample);
     
     const static int maxEnvelopes = 10;
-    int numberOfEnvelopes = 9; // Add control
+    int numberOfEnvelopes = 8; // Add control
     std::array<float,maxEnvelopes> lastSample;
     std::array<int, maxEnvelopes> lastSign;
     std::array<Array<float>, maxEnvelopes> samples;

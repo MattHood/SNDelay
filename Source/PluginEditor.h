@@ -34,11 +34,13 @@ private:
     Slider regen;
     Slider pan;
     Slider mixSlider;
+    Slider filterSlider;
     
     Label delayTimeLabel;
     Label regenLabel;
     Label panLabel;
     Label mixLabel;
+    Label filterLabel;
     
     ToggleButton quantise{"Quantise"};
     Label tempoLabel;

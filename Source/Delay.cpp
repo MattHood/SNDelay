@@ -10,6 +10,10 @@
 
 typedef std::tuple<float, float> StereoPair;
 
+//
+//      Delay Line implementation
+//
+
 DelayLine::DelayLine(int sizeInSamples, float regen, float pan)
     : cpp(pan) {
         if(sizeInSamples <= 0) {
@@ -42,10 +46,25 @@ StereoPair DelayLine::readStereo() {
     return cpp.stereoPair(readMono());
 }
 
+float DelayLine::getPeak() {
+    return buffer->getMagnitude(0, buffer->getNumSamples());
+}
+
+//
+//      Delay Manager implementation
+//
+
+DelayManager::DelayManager(std::shared_ptr<RandomStore> rstore) {
+    randomStore = rstore;
+    activeLine = std::make_shared<DelayLine>(randomStore->getDelayTime(),
+                               randomStore->getRegen(),
+                               randomStore->getPan());
+}
+
 void DelayManager::newLine() {
     
-    auto peak = activeLine->buffer->getMagnitude(0, activeLine->buffer->getNumSamples());
-    if(peak > silence_threshold) {
+    // Don't add blocks that are too quiet
+    if(activeLine->getPeak() > silence_threshold) {
         passiveLines.push_back(activeLine);
     }
     
@@ -60,21 +79,12 @@ void DelayManager::newLine() {
     activeLine = std::make_shared<DelayLine>(dt,r,p);
     
     if (passiveLines.size() > max_lines) {
-        
         passiveLines.pop_front();
-        
     }
 }
 
 StereoPair addStereoPair(StereoPair a, StereoPair b) {
     return std::make_pair(std::get<0>(a) + std::get<0>(b), std::get<1>(a) + std::get<1>(b));
-}
-
-DelayManager::DelayManager(std::shared_ptr<RandomStore> rstore) {
-    randomStore = rstore;
-    activeLine = std::make_shared<DelayLine>(randomStore->getDelayTime(),
-                               randomStore->getRegen(),
-                               randomStore->getPan());
 }
 
 StereoPair DelayManager::readWriteSampleStereo(float sample) {
