@@ -52,10 +52,16 @@ public:
     bool  quantise = true;
     float silence_threshold = 0.0001; // Add control
     int sampleRate;
+    
+    
 private:
     const static int max_lines = 50;
+    bool crossfade_mode;
+    int crossfade_counter;
     
-    std::deque<std::shared_ptr<DelayLine>> passiveLines;
-    std::shared_ptr<DelayLine> activeLine; // Pointer logic may get hairy here
+    std::deque<std::unique_ptr<DelayLine>> passiveLines;
+    std::unique_ptr<DelayLine> activeLine; // Pointer logic may get hairy here
+    std::unique_ptr<DelayLine> incomingLine;
+    std::unique_ptr<DelayLine> outgoingLine;
 };
 

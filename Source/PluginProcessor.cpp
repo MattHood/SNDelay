@@ -134,6 +134,10 @@ bool SndelayAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts) 
 }
 #endif
 
+bool inNeighbourhood(float value, float goal, float delta) {
+    return ((goal - delta) <= value) && (value <= (goal + delta));
+}
+
 bool SndelayAudioProcessor::followEnvelopes(float sample) {
     bool flag = true;
     
@@ -172,11 +176,12 @@ bool SndelayAudioProcessor::followEnvelopes(float sample) {
         //samples[numberOfEnvelopes - 1].add(sample);
         //std::cout << "Buffer Cleared" << std::endl;
         return true;
-        
     }
     else {
         return false;
     }
+    
+   
 }
 
 float SndelayAudioProcessor::getDryGain() {

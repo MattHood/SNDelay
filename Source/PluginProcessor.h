@@ -65,6 +65,7 @@ public:
     
     const static int maxEnvelopes = 10;
     int numberOfEnvelopes = 8; // Add control
+    bool top_envelope_flag = false;
     std::array<float,maxEnvelopes> lastSample;
     std::array<int, maxEnvelopes> lastSign;
     std::array<Array<float>, maxEnvelopes> samples;

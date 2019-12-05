@@ -56,7 +56,7 @@ float DelayLine::getPeak() {
 
 DelayManager::DelayManager(std::shared_ptr<RandomStore> rstore) {
     randomStore = rstore;
-    activeLine = std::make_shared<DelayLine>(randomStore->getDelayTime(),
+    activeLine = std::make_unique<DelayLine>(randomStore->getDelayTime(),
                                randomStore->getRegen(),
                                randomStore->getPan());
 }
@@ -64,8 +64,11 @@ DelayManager::DelayManager(std::shared_ptr<RandomStore> rstore) {
 void DelayManager::newLine() {
     
     // Don't add blocks that are too quiet
+    
+    
+    
     if(activeLine->getPeak() > silence_threshold) {
-        passiveLines.push_back(activeLine);
+        passiveLines.push_back(std::move(activeLine));
     }
     
     auto dt = randomStore->getDelayTime()*sampleRate;
@@ -76,7 +79,7 @@ void DelayManager::newLine() {
         dt = quantiseDelayLength(dt, quantize_subdivision); // Quantise to semiquaver
     }
     
-    activeLine = std::make_shared<DelayLine>(dt,r,p);
+    activeLine = std::make_unique<DelayLine>(dt,r,p);
     
     if (passiveLines.size() > max_lines) {
         passiveLines.pop_front();
@@ -88,18 +91,20 @@ StereoPair addStereoPair(StereoPair a, StereoPair b) {
 }
 
 StereoPair DelayManager::readWriteSampleStereo(float sample) {
-    StereoPair sampleSum = activeLine->readWriteSampleStereo(sample);
     
-    for(std::shared_ptr<DelayLine> &dl: passiveLines) {
-        sampleSum = addStereoPair(sampleSum, dl->readStereo());
-    }
+        StereoPair sampleSum = activeLine->readWriteSampleStereo(sample);
+        
+        for(std::unique_ptr<DelayLine> &dl: passiveLines) {
+            sampleSum = addStereoPair(sampleSum, dl->readStereo());
+        }
+        
+        return sampleSum;
     
-    return sampleSum; 
 }
 
 float DelayManager::readWriteSampleMono(float sample) {
     float sampleSum = activeLine->readWriteSampleMono(sample);
-    for(std::shared_ptr<DelayLine> &dl: passiveLines) {
+    for(std::unique_ptr<DelayLine> &dl: passiveLines) {
         sampleSum += dl->readMono();
     }
     return sampleSum;
