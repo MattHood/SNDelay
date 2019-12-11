@@ -75,24 +75,6 @@ DelayManager::DelayManager(std::shared_ptr<RandomStore> rstore) {
     
 }
 
-//if(activeLine->getPeak() > silence_threshold) {
-//    passiveLines.push_back(std::move(activeLine));
-//}
-//
-//auto dt = randomStore->getDelayTime()*sampleRate;
-//auto r = randomStore->getRegen();
-//auto p = randomStore->getPan();
-//
-//if (quantise) {
-//    dt = quantiseDelayLength(dt, quantize_subdivision); // Quantise to semiquaver
-//}
-//
-//activeLine = std::make_unique<DelayLine>(dt,r,p);
-//
-//if (passiveLines.size() > max_lines) {
-//    passiveLines.pop_front();
-//}
-
 void DelayManager::newLine() {
     // I think this is the best place to do this, saves moving the goalposts halfway through the crossfade. When it is replaced by a proper slider, make sure that there is appropriate caching of the value
     inTransition = true;
@@ -153,10 +135,6 @@ StereoPair addStereoPair(StereoPair a, StereoPair b) {
 
 StereoPair DelayManager::readWriteSampleStereo(float sample) {
     StereoPair sampleSum;
-    
-//    String als = activeLine == NULL ? "N" : "V";
-//    String its = inTransition ? "T" : "F";
-//    std::cout << "AL: " << als << " IT: " << its << std::endl;
     jassert((activeLine != NULL) != inTransition);
     if (inTransition) {
         
