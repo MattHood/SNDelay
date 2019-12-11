@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<JUCERPROJECT id="nYS6d3" name="SNDelay" projectType="audioplug" jucerVersion="5.4.5"
+<JUCERPROJECT id="nYS6d3" name="Teppanyaki" projectType="audioplug" jucerVersion="5.4.5"
               companyName="Swoop Maggie" pluginVST3Category="Delay,Fx" version="0.1">
-  <MAINGROUP id="uNeuwT" name="SNDelay">
+  <MAINGROUP id="uNeuwT" name="Teppanyaki">
     <GROUP id="{1E4D9E89-41D5-83AD-F9CD-3CADA8B7D2D3}" name="Source">
       <FILE id="ZypCeM" name="PluginProcessor.cpp" compile="1" resource="0"
             file="Source/PluginProcessor.cpp"/>
