@@ -21,7 +21,7 @@
 typedef std::tuple<float, float> StereoPair;
 class DelayLine {
 public:
-    DelayLine(int sizeInSamples, float regen, float pan = 0);
+    DelayLine(int sizeInSamples, float regen, float pan, float lpFrequency = 8000, float hpFrequency = 150, float sampleRate = 44100);
     float readMono();
     StereoPair readStereo();
     float getPeak();
@@ -34,6 +34,8 @@ private:
     int size;
     float sample_copy;
     bool didExplicitlyWrite = false;
+    IIRFilter lowPass;
+    IIRFilter highPass;
     ConstantPowerPanner cpp;
     AudioBuffer<float> buffer;
     StereoPair stereoPair(float sample, float angle);
@@ -56,9 +58,11 @@ public:
     float tempo = 100; // Add control
     int quantise_subdivision = 4;
     bool  quantise = true;
-    int crossfade_samples = 10;
+    int crossfade_samples = 200;
     float input_crossfade_samples = (float) crossfade_samples;
     bool inTransition = false;
+    float lpFrequency = 8000;
+    float hpFrequency = 150;
     
 private:
     void doCrossfadeWriteIncrement(float inputSample);

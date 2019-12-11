@@ -15,7 +15,7 @@ AudioProcessorValueTreeState::ParameterLayout createParameters() {
     return {
         std::make_unique<AudioParameterInt>("crossfade",
                                             "Crossfade Samples",
-                                            0, 10000, 10),
+                                            0, 10000, 200),
         std::make_unique<AudioParameterInt>("envelopes",
                                             "Envelopes",
                                             1, 10, 8),
@@ -52,6 +52,12 @@ AudioProcessorValueTreeState::ParameterLayout createParameters() {
         std::make_unique<AudioParameterFloat>("tempo",
                                               "Tempo",
                                               0.0,300.0,100.0),
+        std::make_unique<AudioParameterFloat>("hp_frequency",
+                                              "HP Frequency",
+                                              0,2000,150),
+        std::make_unique<AudioParameterFloat>("lp_frequency",
+                                              "LP Frequency",
+                                              0,20000,8000),
         std::make_unique<AudioParameterInt>("subdivision",
                                             "Subdivision",
                                             1,32,4)};
@@ -88,6 +94,8 @@ parameters(*this, nullptr, Identifier("Teppanyaki"), createParameters())
     parameters.addParameterListener("sample_rate", dman.get());
     parameters.addParameterListener("tempo", dman.get());
     parameters.addParameterListener("quantise_subdivision", dman.get());
+    parameters.addParameterListener("hp_frequency", dman.get());
+    parameters.addParameterListener("lp_frequency", dman.get());
     
     parameters.addParameterListener("envelopes", this);
     parameters.addParameterListener("mix", this);

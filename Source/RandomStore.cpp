@@ -48,7 +48,7 @@ void RandomStore::setPanRange(float min, float max) {
 }
 
 void RandomStore::parameterChanged(const String & id, float newValue) {
-    if (id == "panMin") {
+    if (id == "pan_min") {
         pan.setStart(newValue);
     }
     else if (id == "pan_max") {

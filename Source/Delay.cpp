@@ -14,8 +14,9 @@ typedef std::tuple<float, float> StereoPair;
 //      Delay Line implementation
 //
 
-DelayLine::DelayLine(int sizeInSamples, float regen, float pan)
-    : cpp(pan), buffer(1, sizeInSamples == 0 ? 1 : sizeInSamples) {
+DelayLine::DelayLine(int sizeInSamples, float regen, float pan, float lpFrequency, float hpFrequency, float sampleRate)
+    : cpp(pan),
+      buffer(1, sizeInSamples == 0 ? 1 : sizeInSamples) {
         
         if(sizeInSamples <= 0) {
             sizeInSamples = 1;
@@ -23,10 +24,13 @@ DelayLine::DelayLine(int sizeInSamples, float regen, float pan)
     
     
     
-    buffer.clear();
+          buffer.clear();
     
-    this->size = sizeInSamples;
-    this->regen = regen;
+          this->size = sizeInSamples;
+          this->regen = regen;
+          
+          lowPass.setCoefficients(IIRCoefficients::makeLowPass(sampleRate, lpFrequency));
+          highPass.setCoefficients(IIRCoefficients::makeHighPass(sampleRate, hpFrequency));
 }
 
 float DelayLine::readMono() {
@@ -39,7 +43,9 @@ StereoPair DelayLine::readStereo() {
 }
 
 void DelayLine::write(float sample) {
-    buffer.setSample(0, tick, sample_copy*regen + sample);
+    float preFilter = sample_copy*regen + sample;
+    float postFilter = highPass.processSingleSampleRaw(lowPass.processSingleSampleRaw(preFilter));
+    buffer.setSample(0, tick, postFilter);
     didExplicitlyWrite = true;
 }
 
@@ -102,7 +108,7 @@ void DelayManager::newLine() {
         dt = quantiseDelayLength(dt, quantise_subdivision); // Quantise to semiquaver
     }
     
-    incomingLine = std::make_unique<DelayLine>(dt,r,p);
+    incomingLine = std::make_unique<DelayLine>(dt,r,p,lpFrequency,hpFrequency,sampleRate);
     jassert(incomingLine != NULL);
 }
 
@@ -173,9 +179,20 @@ StereoPair DelayManager::readWriteSampleStereo(float sample) {
 }
 
 float DelayManager::readWriteSampleMono(float sample) {
-    float sampleSum = activeLine->readMono();
-    activeLine->write(sample);
-    activeLine->increment();
+    float sampleSum;
+    
+    jassert((activeLine != NULL) != inTransition);
+    if (inTransition) {
+        
+        sampleSum = incomingLine->readMono() + outgoingLine->readMono();
+        doCrossfadeWriteIncrement(sample);
+    }
+    else {
+        sampleSum = activeLine->readMono();
+        activeLine->write(sample);
+        activeLine->increment();
+    }
+    
     for(std::unique_ptr<DelayLine> &dl: passiveLines) {
         sampleSum += dl->readMono();
         dl->increment();
@@ -210,6 +227,12 @@ void DelayManager::parameterChanged(const String & id, float newValue) {
     }
     else if (id == "crossfade") {
         crossfade_samples = (int)newValue;
+    }
+    else if (id == "hp_frequency") {
+        hpFrequency = newValue;
+    }
+    else if (id == "lp_frequency") {
+        lpFrequency = newValue;
     }
     
 }

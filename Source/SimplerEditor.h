@@ -67,7 +67,12 @@ private:
     std::unique_ptr<SliderAttachment> mixAttach;
     
     ToggleButton quantiseButton;
+    Label quantiseLabel;
     std::unique_ptr<ButtonAttachment> quantiseAttach;
+    
+    Slider tempoSlider;
+    Label tempoLabel;
+    std::unique_ptr<SliderAttachment> tempoAttach;
     
     Slider crossfadeSlider;
     Label crossfadeLabel;
@@ -76,6 +81,16 @@ private:
     Slider envelopesSlider;
     Label envelopesLabel;
     std::unique_ptr<SliderAttachment> envelopesAttach;
+    
+    Slider highpassSlider;
+    Label highpassLabel;
+    std::unique_ptr<SliderAttachment> highpassAttach;
+    
+    Slider lowpassSlider;
+    Label lowpassLabel;
+    std::unique_ptr<SliderAttachment> lowpassAttach;
+    
+    
     
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (SndelayAudioProcessorEditor)

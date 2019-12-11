@@ -29,22 +29,6 @@ SndelayAudioProcessorEditor::SndelayAudioProcessorEditor (SndelayAudioProcessor&
     // Make sure that before the constructor has finished, you've set the
     // editor's size to whatever you need it to be.
     setSize (400, 600);
-    
-//    delayMin.setSliderStyle(Slider::SliderStyle::LinearHorizontal);
-//    delayMin.setTextBoxStyle(Slider::TextEntryBoxPosition::TextBoxLeft, true, 70, 24);
-//    addAndMakeVisible(delayMin);
-//    delayMinAttach.reset(new SliderAttachment(vts, "delay_min", delayMin));
-//    delayMinLabel.setText("Delay Min", dontSendNotification);
-//    delayMinLabel.attachToComponent(&delayMin, true);
-//    addAndMakeVisible(delayMinLabel);
-//
-//    delayMax.setSliderStyle(Slider::SliderStyle::LinearHorizontal);
-//    delayMax.setTextBoxStyle(Slider::TextEntryBoxPosition::TextBoxLeft, true, 70, 24);
-//    addAndMakeVisible(delayMax);
-//    delayMaxAttach.reset(new SliderAttachment(vts, "delay_max", delayMax));
-//    delayMinLabel.setText("Delay Max", dontSendNotification);
-//    delayMaxLabel.attachToComponent(&delayMax, true);
-//    addAndMakeVisible(delayMaxLabel);
    
     sliderBuilder(delayMin, delayMinLabel, delayMinAttach, "delay_min", "Delay Min");
     sliderBuilder(delayMax, delayMaxLabel, delayMaxAttach, "delay_max", "Delay Max");
@@ -57,10 +41,14 @@ SndelayAudioProcessorEditor::SndelayAudioProcessorEditor (SndelayAudioProcessor&
     quantiseButton.setToggleState(true, sendNotification);
     addAndMakeVisible(quantiseButton);
     quantiseAttach.reset(new ButtonAttachment(valueTreeState, "quantise",quantiseButton));
+    quantiseLabel.setText("Quantise",dontSendNotification);
+    quantiseLabel.attachToComponent(&quantiseButton, true);
     
+    sliderBuilder(tempoSlider, tempoLabel, tempoAttach, "tempo", "Tempo");
     sliderBuilder(envelopesSlider, envelopesLabel, envelopesAttach, "envelopes", "Envelopes");
     sliderBuilder(crossfadeSlider, crossfadeLabel, crossfadeAttach, "crossfade", "Crossfade");
-    
+    sliderBuilder(highpassSlider, highpassLabel, highpassAttach, "hp_frequency", "Highpass");
+    sliderBuilder(lowpassSlider, lowpassLabel, lowpassAttach, "lp_frequency", "Lowpass");
     
 }
 
@@ -95,8 +83,11 @@ void SndelayAudioProcessorEditor::resized()
     panMax.setBounds(area.removeFromTop(slider_height));
     mixSlider.setBounds(area.removeFromTop(slider_height));
     quantiseButton.setBounds(area.removeFromTop(slider_height));
+    tempoSlider.setBounds(area.removeFromTop(slider_height));
     envelopesSlider.setBounds(area.removeFromTop(slider_height));
     crossfadeSlider.setBounds(area.removeFromTop(slider_height));
+    highpassSlider.setBounds(area.removeFromTop(slider_height));
+    lowpassSlider.setBounds(area.removeFromTop(slider_height));
     
     
     
