@@ -9,29 +9,108 @@
 */
 
 #include "PluginProcessor.h"
-#include "PluginEditor.h"
+#include "SimplerEditor.h"
+
+AudioProcessorValueTreeState::ParameterLayout createParameters() {
+    return {
+        std::make_unique<AudioParameterInt>("crossfade",
+                                            "Crossfade Samples",
+                                            0, 10000, 10),
+        std::make_unique<AudioParameterInt>("envelopes",
+                                            "Envelopes",
+                                            1, 10, 8),
+        std::make_unique<AudioParameterFloat>("mix",
+                                              "Mix",
+                                              -1, 1, 0),
+        std::make_unique<AudioParameterFloat>("delay_min",
+                                              "Delay Min",
+                                              0.01, 3, 0.1),
+        std::make_unique<AudioParameterFloat>("delay_max",
+                                              "Delay Max",
+                                              0.01, 3, 1),
+        std::make_unique<AudioParameterFloat>("regen_min",
+                                              "Regen Min",
+                                              0, 1, 0.4),
+        std::make_unique<AudioParameterFloat>("regen_max",
+                                              "Regen Max",
+                                              0, 1, 0.85),
+        std::make_unique<AudioParameterFloat>("pan_min",
+                                              "Pan Min",
+                                              -1, 1, -1),
+        std::make_unique<AudioParameterFloat>("pan_max",
+                                              "Pan Max",
+                                              -1, 1, 1),
+        std::make_unique<AudioParameterBool>("quantise",
+                                             "Quantise",
+                                             true),
+        std::make_unique<AudioParameterFloat>("silence_threshold",
+                                              "Silence Threshold",
+                                              0, 1, 0.001),
+        std::make_unique<AudioParameterInt>("sample_rate",
+                                            "Sample Rate",
+                                            1, 192000, 44100),
+        std::make_unique<AudioParameterFloat>("tempo",
+                                              "Tempo",
+                                              0.0,300.0,100.0),
+        std::make_unique<AudioParameterInt>("subdivision",
+                                            "Subdivision",
+                                            1,32,4)};
+}
 
 //==============================================================================
 SndelayAudioProcessor::SndelayAudioProcessor()
+    
 #ifndef JucePlugin_PreferredChannelConfigurations
-     : AudioProcessor (BusesProperties()
+    : AudioProcessor (BusesProperties()
                      #if ! JucePlugin_IsMidiEffect
                       #if ! JucePlugin_IsSynth
                        .withInput  ("Input",  AudioChannelSet::stereo(), true)
                       #endif
                        .withOutput ("Output", AudioChannelSet::stereo(), true)
                      #endif
-                       )
+                       ),
+parameters(*this, nullptr, Identifier("Teppanyaki"), createParameters())
 #endif
 {
     randomStore = std::make_shared<RandomStore>();
-    dman = std::make_unique<DelayManager>(randomStore);
-     
+    dman = std::make_shared<DelayManager>(randomStore);
+    
+    parameters.addParameterListener("delay_min", randomStore.get());
+    parameters.addParameterListener("delay_max", randomStore.get());
+    parameters.addParameterListener("regen_min", randomStore.get());
+    parameters.addParameterListener("regen_max", randomStore.get());
+    parameters.addParameterListener("pan_min", randomStore.get());
+    parameters.addParameterListener("pan_max", randomStore.get());
+    
+    parameters.addParameterListener("crossfade", dman.get());
+    parameters.addParameterListener("quantise", dman.get());
+    parameters.addParameterListener("silence_threshold", dman.get());
+    parameters.addParameterListener("sample_rate", dman.get());
+    parameters.addParameterListener("tempo", dman.get());
+    parameters.addParameterListener("quantise_subdivision", dman.get());
+    
+    parameters.addParameterListener("envelopes", this);
+    parameters.addParameterListener("mix", this);
+    
+    
+    
+    
+    
 }
 
 SndelayAudioProcessor::~SndelayAudioProcessor()
 {
     
+}
+
+void SndelayAudioProcessor::parameterChanged(const String & id, float newValue) {
+    
+    if (id == "envelopes") {
+        numberOfEnvelopes = (int)newValue;
+    }
+    else if (id == "mix") {
+        mix = newValue;
+    }
 }
 
 //==============================================================================
@@ -138,7 +217,7 @@ bool inNeighbourhood(float value, float goal, float delta) {
     return ((goal - delta) <= value) && (value <= (goal + delta));
 }
 
-bool SndelayAudioProcessor::followEnvelopes(float sample) {
+bool SndelayAudioProcessor::followEnvelopes(float sample, bool crossfading) {
     bool flag = true;
     
     for (int i = 0; flag && i < (numberOfEnvelopes - 2); i++) {
@@ -175,7 +254,7 @@ bool SndelayAudioProcessor::followEnvelopes(float sample) {
     if (flag) {
         //samples[numberOfEnvelopes - 1].add(sample);
         //std::cout << "Buffer Cleared" << std::endl;
-        return true;
+        return !crossfading;
     }
     else {
         return false;
@@ -230,9 +309,6 @@ void SndelayAudioProcessor::processBlock (AudioBuffer<float>& buffer, MidiBuffer
         dman->tempo = currentPositionInfo.bpm;
     }
     
-
-    
-    
     const int channels = buffer.getNumChannels();
     
     for (int currentSampleIndex = 0; currentSampleIndex < buffer.getNumSamples(); ++currentSampleIndex) {
@@ -246,7 +322,7 @@ void SndelayAudioProcessor::processBlock (AudioBuffer<float>& buffer, MidiBuffer
         // Peak vs. RMS testing
         
         // DelayManager housekeeping
-        if (followEnvelopes(sample)) {
+        if (followEnvelopes(sample, dman->inTransition)) {
             dman->newLine();
         }
 
@@ -290,7 +366,8 @@ bool SndelayAudioProcessor::hasEditor() const
 
 AudioProcessorEditor* SndelayAudioProcessor::createEditor()
 {
-    return new SndelayAudioProcessorEditor (*this);
+    return new SndelayAudioProcessorEditor (*this, parameters);
+    
 }
 
 //==============================================================================

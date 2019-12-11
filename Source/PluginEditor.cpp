@@ -12,24 +12,28 @@
 #include "PluginEditor.h"
 
 //==============================================================================
-SndelayAudioProcessorEditor::SndelayAudioProcessorEditor (SndelayAudioProcessor& p)
-    : AudioProcessorEditor (&p), processor (p)
+SndelayAudioProcessorEditor::SndelayAudioProcessorEditor (SndelayAudioProcessor& p, AudioProcessorValueTreeState& vts)
+    : AudioProcessorEditor (&p), processor (p), valueTreeState(vts)
+
 {
     // Make sure that before the constructor has finished, you've set the
     // editor's size to whatever you need it to be.
-    setSize (400, 300);
+    setSize (400, 600);
     
+    // Get the required params from vts.
+     delayAttach.reset(new TwoValueSliderAttachment(valueTreeState,"delay_min", "delay_max",delayTime));
     delayTime.setSliderStyle(Slider::SliderStyle::TwoValueHorizontal);
     delayTime.setTextBoxStyle(Slider::TextEntryBoxPosition::NoTextBox, true, 0, 0);
-    delayTime.setRange(0.1, 5);
-    delayTime.setMinValue(0.5);
-    delayTime.setMaxValue(1);
+//    delayTime.setRange(0.1, 1);
+//    delayTime.setMinValue(0.5);
+//    delayTime.setMaxValue(1);
     delayTime.setTextValueSuffix(" s");
-    delayTime.onValueChange =
-        [this] {
-            processor.randomStore->setDelayRange(delayTime.getMinValue(), delayTime.getMaxValue());
-        };
+//    delayTime.onValueChange =
+//        [this] {
+//
+//        };
     addAndMakeVisible(delayTime);
+   
     
     delayTimeLabel.setText("Time", dontSendNotification);
     delayTimeLabel.attachToComponent(&delayTime, true);
@@ -68,13 +72,8 @@ SndelayAudioProcessorEditor::SndelayAudioProcessorEditor (SndelayAudioProcessor&
     
     mixSlider.setSliderStyle(Slider::SliderStyle::LinearHorizontal);
     mixSlider.setTextBoxStyle(Slider::TextEntryBoxPosition::NoTextBox, true, 0, 0);
-    mixSlider.setRange(-1, 1);
-    mixSlider.setValue(0);
-    mixSlider.onValueChange =
-    [this] {
-        processor.mix = mixSlider.getValue();
-    };
     addAndMakeVisible(mixSlider);
+    mixAttach.reset(new SliderAttachment(vts, "mix", mixSlider));
     
     mixLabel.setText("Mix", dontSendNotification);
     mixLabel.attachToComponent(&mixSlider, true);
@@ -83,10 +82,21 @@ SndelayAudioProcessorEditor::SndelayAudioProcessorEditor (SndelayAudioProcessor&
     
     quantise.onClick = [this] {
         processor.dman->quantise = quantise.getToggleState();
-        
     };
     quantise.setToggleState(true, sendNotification);
     addAndMakeVisible(quantise);
+    
+    crossfadeSlider.setSliderStyle(Slider::SliderStyle::LinearHorizontal);
+    crossfadeSlider.setTextBoxStyle(Slider::TextEntryBoxPosition::TextBoxLeft, true, 80, 20);
+    addAndMakeVisible(crossfadeSlider);
+    crossfadeAttach.reset(new SliderAttachment(vts, "crossfade", crossfadeSlider));
+    
+//    crossfadeLabel.setText("Crossfade", dontSendNotification);
+//    crossfadeLabel.attachToComponent(&crossfadeSlider, true);
+//    addAndMakeVisible(crossfadeLabel);
+    
+//    envelopes.setProperties("Envelopes", 1, 10, processor.inputNumberOfEnvelopes, &processor.inputNumberOfEnvelopes);
+//    addAndMakeVisible(envelopes);
     
 }
 
@@ -116,4 +126,8 @@ void SndelayAudioProcessorEditor::resized()
     pan.setBounds(sliderLeft, 80, getWidth() - sliderLeft - 10, 20);
     mixSlider.setBounds(sliderLeft, 110, getWidth() - sliderLeft - 10, 20);
     quantise.setBounds(sliderLeft, 140, getWidth() - 30, 20);
+    crossfadeSlider.setBounds(sliderLeft, 170, getWidth() - sliderLeft - 10, 50);
+    envelopes.setBounds(0, 210, getWidth() - sliderLeft - 10, 50);
+    
+    
 }

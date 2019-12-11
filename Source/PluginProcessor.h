@@ -21,7 +21,7 @@ typedef std::tuple<float, float> StereoPair;
 //==============================================================================
 /**
 */
-class SndelayAudioProcessor  : public AudioProcessor
+class SndelayAudioProcessor  : public AudioProcessor, public AudioProcessorValueTreeState::Listener
 {
 public:
     //==============================================================================
@@ -61,25 +61,32 @@ public:
     void getStateInformation (MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
     
-    bool followEnvelopes(float sample);
+    bool followEnvelopes(float sample, bool crossfading);
+    void parameterChanged(const String & id, float newValue) override;
+    
+    AudioProcessorValueTreeState parameters;
     
     const static int maxEnvelopes = 10;
-    int numberOfEnvelopes = 8; // Add control
+    
     bool top_envelope_flag = false;
     std::array<float,maxEnvelopes> lastSample;
     std::array<int, maxEnvelopes> lastSign;
     std::array<Array<float>, maxEnvelopes> samples;
     Array<float> transientBuffer;
     
-    float mix;
+    
     float getDryGain();
     float getWetGain();
     
     std::shared_ptr<RandomStore> randomStore;
-    std::unique_ptr<DelayManager> dman;
+    std::shared_ptr<DelayManager> dman;
     
     AudioPlayHead* playHead;
     AudioPlayHead::CurrentPositionInfo currentPositionInfo;
+    
+    int numberOfEnvelopes = 8; // Add control
+//    float inputNumberOfEnvelopes = 8;
+    float mix;
     
     
 

@@ -14,7 +14,7 @@
 
 #endif /* RandomStore_hpp */
 
-class RandomStore {
+class RandomStore : public AudioProcessorValueTreeState::Listener {
 public:
     RandomStore();
     float getDelayTime();
@@ -23,6 +23,8 @@ public:
     void setRegenRange(float min, float max);
     float getPan();
     void setPanRange(float min, float max);
+    
+    void parameterChanged(const String & id, float newValue) override;
 private:
     Range<float> delayTime;
     Range<float> regen;

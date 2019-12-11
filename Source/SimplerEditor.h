@@ -21,6 +21,7 @@
 class SndelayAudioProcessorEditor  : public AudioProcessorEditor
 {
 typedef AudioProcessorValueTreeState::SliderAttachment SliderAttachment;
+typedef AudioProcessorValueTreeState::ButtonAttachment ButtonAttachment;
 public:
     SndelayAudioProcessorEditor (SndelayAudioProcessor&, AudioProcessorValueTreeState& vts);
     ~SndelayAudioProcessorEditor();
@@ -35,30 +36,47 @@ private:
     SndelayAudioProcessor& processor;
     AudioProcessorValueTreeState& valueTreeState;
     
-    Slider delayTime;
-    Slider regen;
-    Slider pan;
-    Slider mixSlider;
-    Slider filterSlider;
+    void sliderBuilder(Slider& slider, Label& label, std::unique_ptr<SliderAttachment>& attach, String param, String title);
     
-    Label delayTimeLabel;
-    Label regenLabel;
-    Label panLabel;
-    Label mixLabel;
-    Label filterLabel;
+    Slider delayMin;
+    Label delayMinLabel;
+    std::unique_ptr<SliderAttachment> delayMinAttach;
     
-    ToggleButton quantise{"Quantise"};
-    Label tempoLabel;
-    Label bpmLabel;
+    Slider delayMax;
+    Label delayMaxLabel;
+    std::unique_ptr<SliderAttachment> delayMaxAttach;
+    
+    Slider regenMin;
+    Label regenMinLabel;
+    std::unique_ptr<SliderAttachment> regenMinAttach;
+    
+    Slider regenMax;
+    Label regenMaxLabel;
+    std::unique_ptr<SliderAttachment> regenMaxAttach;
+    
+    Slider panMin;
+    Label panMinLabel;
+    std::unique_ptr<SliderAttachment> panMinAttach;
+    
+    Slider panMax;
+    Label panMaxLabel;
+    std::unique_ptr<SliderAttachment> panMaxAttach;
 
+    Slider mixSlider;
+    Label mixLabel;
     std::unique_ptr<SliderAttachment> mixAttach;
-    std::unique_ptr<TwoValueSliderAttachment> delayAttach;
+    
+    ToggleButton quantiseButton;
+    std::unique_ptr<ButtonAttachment> quantiseAttach;
     
     Slider crossfadeSlider;
     Label crossfadeLabel;
     std::unique_ptr<SliderAttachment> crossfadeAttach;
     
-    SingleSlider envelopes;
+    Slider envelopesSlider;
+    Label envelopesLabel;
+    std::unique_ptr<SliderAttachment> envelopesAttach;
+    
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (SndelayAudioProcessorEditor)
 };

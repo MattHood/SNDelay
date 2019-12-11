@@ -46,3 +46,24 @@ void RandomStore::setPanRange(float min, float max) {
     pan.setStart(min);
     pan.setEnd(max);
 }
+
+void RandomStore::parameterChanged(const String & id, float newValue) {
+    if (id == "panMin") {
+        pan.setStart(newValue);
+    }
+    else if (id == "pan_max") {
+        pan.setEnd(newValue);
+    }
+    else if (id == "regen_min") {
+        regen.setStart(newValue);
+    }
+    else if (id == "regen_max") {
+        regen.setEnd(newValue);
+    }
+    else if (id == "delay_min") {
+        delayTime.setStart(newValue);
+    }
+    else if (id == "delay_max") {
+        delayTime.setEnd(newValue);
+    }
+}
